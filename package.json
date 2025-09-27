@@ -4,8 +4,7 @@
   "description": "Learning, node, express and mongoDB",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon server.js",
-    "start:dev": "cross-env NODE_ENV=development nodemon server.js",
+    "start": "cross-env NODE_ENV=development nodemon --no-deprecation server.js",
     "start:prod": "cross-env NODE_ENV=production nodemon server.js"
   },
   "author": "Shin",
@@ -13,6 +12,7 @@
   "dependencies": {
     "dotenv": "^17.2.2",
     "express": "^4.21.2",
+    "mongoose": "^5.13.23",
     "morgan": "^1.10.1"
   },
   "devDependencies": {
