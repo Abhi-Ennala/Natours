@@ -29,7 +29,7 @@ async function createTour() {
     console.log(err);
   }
 }
-console.log(process.argv);
+// console.log(process.argv);
 async function deleteTours() {
   try {
     await Tour.deleteMany();
