@@ -7,7 +7,9 @@ const tourSchema = new mongoose.Schema(
       type: String,
       required: [true, 'A tour must have a name'],
       unique: true,
-      trim: true
+      trim: true,
+      minLength: [10, 'Length of the name must be more than 9'],
+      maxLength: [40, 'Length must be less than 41']
     },
     slug: String,
     duration: {
@@ -20,11 +22,17 @@ const tourSchema = new mongoose.Schema(
     },
     difficulty: {
       type: String,
-      required: [true, 'A tour must have a difficulty']
+      required: [true, 'A tour must have a difficulty'],
+      enum: {
+        values: ['easy', 'medium', 'hard'],
+        message: 'The tour diffuclty must be easy, medium or hard'
+      }
     },
     ratingsAverage: {
       type: Number,
-      default: 4.5
+      default: 4.5,
+      min: [1, 'Rating must be greater than or equal to 1'],
+      max: [5, 'Rating must be less than or equal to 5']
     },
     ratingsQuantity: {
       type: Number,
@@ -34,7 +42,17 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'A tour must have a price']
     },
-    priceDiscount: Number,
+    priceDiscount: {
+      type: Number,
+      validate: {
+        validator: function(val) {
+          // here "this" will only point to the new document during the document creation, it doesnt work during updation
+          console.log(this);
+          return val < this.price;
+        }
+      },
+      message: 'The priceDiscount cannot be more than price itself'
+    },
     summary: {
       type: String,
       trim: true,
@@ -88,6 +106,11 @@ tourSchema.pre(/^find/, function(next) {
 
 tourSchema.post(/^find/, function(docs, next) {
   console.log(`Query took ${Date.now() - this.start} milliseconds`);
+  next();
+});
+
+tourSchema.pre('aggregate', function(next) {
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
   next();
 });
 
