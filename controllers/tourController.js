@@ -74,19 +74,18 @@ exports.updateTour = catchAsync(async (req, res, next) => {
 
 exports.deleteTour = catchAsync(async (req, res, next) => {
   const deleteUser = await Tour.findByIdAndDelete(req.params.id);
-  
+
   if (!deleteUser) {
     return next(new AppError('Tour not found', 404));
-  } else {
-    res.status(204).json({
-      status: 'success',
-      message: 'Your document is deleted'
-    });
-    // res.status(400).json({
-    //   status: 'fail',
-    //   message: 'Your document is not present in the collection'
-    // });
   }
+  res.status(204).json({
+    status: 'success',
+    message: 'Your document is deleted'
+  });
+  // res.status(400).json({
+  //   status: 'fail',
+  //   message: 'Your document is not present in the collection'
+  // });
 });
 
 exports.getTourStats = catchAsync(async (req, res, next) => {

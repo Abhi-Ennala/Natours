@@ -18,17 +18,16 @@ app.use(express.static(`${__dirname}/public`));
 
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
-  console.log(req.requestTime);
+  console.log('Time of Request: ', req.requestTime);
   next();
 });
 // Middlewares end
-
+//----------------------
 // Routes
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 
 app.use('*', function(req, res, next) {
- 
   // next();
   // const err = new Error(`Can't find the ${req.originalUrl} on the server`);
   // err.status = 'fail';
