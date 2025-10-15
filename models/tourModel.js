@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+// const User = require('./userModel');
 
 const tourSchema = new mongoose.Schema(
   {
@@ -24,8 +25,8 @@ const tourSchema = new mongoose.Schema(
       type: String,
       required: [true, 'A tour must have a difficulty'],
       enum: {
-        values: ['easy', 'medium', 'hard'],
-        message: 'The tour diffuclty must be easy, medium or hard'
+        values: ['easy', 'medium', 'difficult'],
+        message: 'The tour diffuclty must be easy, medium or difficult'
       }
     },
     ratingsAverage: {
@@ -75,7 +76,37 @@ const tourSchema = new mongoose.Schema(
     secretTour: {
       type: Boolean,
       default: false
-    }
+    },
+    startLocation: {
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point']
+      },
+      coordinates: [Number],
+      address: String,
+      description: String
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point']
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: String
+      }
+    ],
+    guides: [
+      // Child referencing
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User'
+      }
+    ]
   },
   {
     toJSON: { virtuals: true },
@@ -87,10 +118,24 @@ tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7;
 });
 
+// Virtual populate
+// Instead of directly doing "child referencing" in which the array grows indefinitely with the numbers of reviews increaseing which can cap the limit of 16MB per document. So, we are virtually populating the reviews that belong to a tour without persisting that to the database. This happens on the fly.
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id'
+});
+
 tourSchema.pre('save', function(next) {
   this.slug = slugify(this.name);
   next();
 });
+
+// tourSchema.pre('save', async function(next) {
+//   const guides = this.guides.map(async id => await User.findById(id));
+//   this.guides = await Promise.all(guides);
+//   next();
+// });
 
 // tourSchema.post('save', function(doc, next) {
 //   console.log(doc.name);
@@ -101,6 +146,14 @@ tourSchema.pre(/^find/, function(next) {
   this.find({ secretTour: { $ne: true } });
 
   this.start = Date.now();
+  next();
+});
+
+tourSchema.pre(/^find/, function(next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt'
+  });
   next();
 });
 

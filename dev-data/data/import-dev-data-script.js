@@ -2,6 +2,7 @@ const fs = require('fs');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const Tour = require('./../../models/tourModel');
+const Review = require('./../../models/reviewModel');
 
 dotenv.config({ path: './config.env' });
 
@@ -16,13 +17,13 @@ mongoose
   })
   .then(() => console.log('Database connection established'));
 
-const tours = JSON.parse(
-  fs.readFileSync('./dev-data/data/tours-simple.json', 'utf-8')
+const reviews = JSON.parse(
+  fs.readFileSync('./dev-data/data/reviews.json', 'utf-8')
 );
 
-async function createTour() {
+async function createReview() {
   try {
-    await Tour.create(tours);
+    await Review.create(reviews);
     console.log('Data successfully added to the Database');
     await mongoose.connection.close();
   } catch (err) {
@@ -30,9 +31,9 @@ async function createTour() {
   }
 }
 // console.log(process.argv);
-async function deleteTours() {
+async function deleteReview() {
   try {
-    await Tour.deleteMany();
+    await Review.deleteMany();
     console.log('Data successfully deleted from the Database');
     await mongoose.connection.close();
     console.log('Database connection closed successfully');
@@ -42,7 +43,7 @@ async function deleteTours() {
 }
 
 if (process.argv[2] === '--import') {
-  createTour();
+  createReview();
 } else if (process.argv[2] === '--delete') {
-  deleteTours();
+  deleteReview();
 }
