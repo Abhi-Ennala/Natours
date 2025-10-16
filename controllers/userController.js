@@ -1,6 +1,7 @@
 const catchAsync = require('../utils/catchAsync');
 const User = require('./../models/userModel');
 const AppError = require('./../utils/appError');
+const factory = require('./handlerFactory');
 
 const filterObj = (userObj, ...fields) => {
   const obj = {};
@@ -11,21 +12,12 @@ const filterObj = (userObj, ...fields) => {
   return obj;
 };
 
-exports.getAllusers = catchAsync(async (req, res) => {
-  /**
-  User.find() returns a Mongoose Query object.
+/**
+User.find() returns a Mongoose Query object.
 
-  That object holds all the information about what will be executed, but nothing has been sent to MongoDB yet.
+That object holds all the information about what will be executed, but nothing has been sent to MongoDB yet.
 
-  When you do await User.find() (or .then()), that’s when Mongoose sends the query to MongoDB and resolves with actual documents. */
-  const users = await User.find();
-  res.status(200).json({
-    status: 'success',
-    data: {
-      users
-    }
-  });
-});
+When you do await User.find() (or .then()), that’s when Mongoose sends the query to MongoDB and resolves with actual documents. */
 
 exports.updateMyData = catchAsync(async (req, res, next) => {
   if (req.body.password || req.body.confirmPassword) {
@@ -58,13 +50,6 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined'
-  });
-};
-
 exports.createUser = (req, res) => {
   res.status(500).json({
     status: 'error',
@@ -72,16 +57,15 @@ exports.createUser = (req, res) => {
   });
 };
 
-exports.updateUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined'
-  });
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
 };
 
-exports.deleteUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined'
-  });
-};
+exports.getAllusers = factory.getAll(User);
+
+exports.getUser = factory.getOne(User);
+
+exports.updateUser = factory.updateOne(User);
+
+exports.deleteUser = factory.deleteOne(User);

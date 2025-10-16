@@ -33,7 +33,8 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       default: 4.5,
       min: [1, 'Rating must be greater than or equal to 1'],
-      max: [5, 'Rating must be less than or equal to 5']
+      max: [5, 'Rating must be less than or equal to 5'],
+      set: val => Math.round(val * 10) / 10
     },
     ratingsQuantity: {
       type: Number,
@@ -114,6 +115,10 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: '2dsphere' });
+
 tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7;
 });
@@ -149,6 +154,7 @@ tourSchema.pre(/^find/, function(next) {
   next();
 });
 
+// This doesn't populate the guides yet because the ids of the guides in the document are fake and does not match any of the users in the database
 tourSchema.pre(/^find/, function(next) {
   this.populate({
     path: 'guides',
@@ -162,10 +168,13 @@ tourSchema.post(/^find/, function(docs, next) {
   next();
 });
 
-tourSchema.pre('aggregate', function(next) {
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-  next();
-});
+// Commented for geoNear
+// tourSchema.pre('aggregate', function(next) {
+//   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+
+//   console.log(this.pipeline());
+//   next();
+// });
 
 const Tour = mongoose.model('Tour', tourSchema);
 

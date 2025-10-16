@@ -1,5 +1,3 @@
-const Tour = require('./../models/tourModel');
-
 class APIFeatures {
   constructor(query, reqQueryObject) {
     this.query = query;
@@ -16,7 +14,7 @@ class APIFeatures {
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
 
-    this.query = Tour.find(JSON.parse(queryStr));
+    this.query = this.query.find(JSON.parse(queryStr));
 
     return this;
   }
@@ -52,11 +50,12 @@ class APIFeatures {
     this.query.skip(skip).limit(limit);
 
     if (this.reqQueryObject.page) {
-      const numTours = await Tour.countDocuments();
+      const numTours = await this.query.countDocuments();
       if (skip >= numTours) throw new Error('This page does not exist');
     }
 
     return this;
   }
 }
+
 module.exports = APIFeatures;
