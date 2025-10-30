@@ -172,5 +172,4 @@ exports.getDistances = catchAsync(async (req, res, next) => {
       data: distances
     }
   });
-
 });

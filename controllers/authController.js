@@ -66,7 +66,6 @@ exports.signup = catchAsync(async (req, res, next) => {
 
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
-
   //1)Check if the email and password exists in the body
   if (!email || !password) {
     return next(new AppError('Please provide email and password', 400));
@@ -88,7 +87,16 @@ exports.login = catchAsync(async (req, res, next) => {
   // });
 });
 
+exports.logout = (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true
+  });
+  res.status(200).json({ status: 'success' });
+};
+
 exports.protect = catchAsync(async (req, res, next) => {
+  console.log('Inside protect handler');
   //1)Getting the token and check if it's present
   let token;
   if (
@@ -96,6 +104,8 @@ exports.protect = catchAsync(async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 
   if (!token) {
@@ -128,8 +138,37 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
   // console.log(currentUser);
   req.user = currentUser;
+  res.locals.user = currentUser;
   next();
 });
+
+exports.isLoggedIn = async (req, res, next) => {
+  try {
+    if (req.cookies.jwt) {
+      const decoded = await promisify(jwt.verify)(
+        req.cookies.jwt,
+        process.env.JWT_SECRET_RECIPE
+      );
+
+      const currentUser = await User.findById(decoded.id);
+
+      if (!currentUser) {
+        return next();
+      }
+
+      if (currentUser.changedPasswordAfter(decoded.iat)) {
+        return next();
+      }
+
+      // There is a logged in user
+      res.locals.user = currentUser;
+      return next();
+    }
+  } catch (err) {
+    return next();
+  }
+  next();
+};
 
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {
@@ -225,13 +264,15 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // });
 });
 
-exports.updatePassword = catchAsync(async (req, res, next) => {
+exports.updateMyPassword = catchAsync(async (req, res, next) => {
   //1) Get the user from the Collection
   // console.log(req.user);
+  console.log('inside update password handler');
+  console.log(req.body);
   const user = await User.findById(req.user._id);
 
   //2)Check if the password is correct
-  if (!(await user.correctPassword(req.body.oldPassword, user.password))) {
+  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
     return next(
       new AppError(
         'The password you have entered is incorrect! Please try again'
@@ -239,16 +280,15 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
       401
     );
   }
-
   //3)Update the password
-  user.password = req.body.newPassword;
-  user.passwordConfirm = req.body.confirmPassword;
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
   await user.save();
 
   //4)Log in the user, send jwt
   createSendToken(user, 200, res, false);
   // const token = signToken(user._id);
-
+  console.log('update password hanlder executes without any error');
   // res.status(200).json({
   //   status: 'success',
   //   token

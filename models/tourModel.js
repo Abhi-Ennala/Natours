@@ -124,7 +124,7 @@ tourSchema.virtual('durationWeeks').get(function() {
 });
 
 // Virtual populate
-// Instead of directly doing "child referencing" in which the array grows indefinitely with the numbers of reviews increaseing which can cap the limit of 16MB per document. So, we are virtually populating the reviews that belong to a tour without persisting that to the database. This happens on the fly.
+// Instead of directly doing "child referencing" in which the array grows indefinitely with the numbers of reviews increasing which can cap the limit of 16MB per document. So, we are virtually populating the reviews that belong to a tour without persisting that to the database. This happens on the fly.
 tourSchema.virtual('reviews', {
   ref: 'Review',
   foreignField: 'tour',
@@ -154,7 +154,6 @@ tourSchema.pre(/^find/, function(next) {
   next();
 });
 
-// This doesn't populate the guides yet because the ids of the guides in the document are fake and does not match any of the users in the database
 tourSchema.pre(/^find/, function(next) {
   this.populate({
     path: 'guides',
