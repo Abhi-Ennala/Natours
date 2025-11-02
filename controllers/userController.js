@@ -60,8 +60,6 @@ That object holds all the information about what will be executed, but nothing h
 When you do await User.find() (or .then()), that’s when Mongoose sends the query to MongoDB and resolves with actual documents. */
 
 exports.updateMyData = catchAsync(async (req, res, next) => {
-  console.log(req.file);
-  console.log(req.body);
   if (req.body.password || req.body.confirmPassword) {
     return next(
       new AppError(

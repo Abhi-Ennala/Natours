@@ -49,7 +49,6 @@ const tourSchema = new mongoose.Schema(
       validate: {
         validator: function(val) {
           // here "this" will only point to the new document during the document creation, it doesnt work during updation
-          console.log(this);
           return val < this.price;
         }
       },

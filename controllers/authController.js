@@ -53,7 +53,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   });
 
   const url = `${req.protocol}://${req.get('host')}/me`;
-  console.log(url);
+  // console.log(url);
   await new Email(newUser, url).sendWelcome();
 
   createSendToken(newUser, 201, res, true);
@@ -265,8 +265,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 exports.updateMyPassword = catchAsync(async (req, res, next) => {
   //1) Get the user from the Collection
   // console.log(req.user);
-  console.log('inside update password handler');
-  console.log(req.body);
   const user = await User.findById(req.user._id);
 
   //2)Check if the password is correct
@@ -286,7 +284,6 @@ exports.updateMyPassword = catchAsync(async (req, res, next) => {
   //4)Log in the user, send jwt
   createSendToken(user, 200, res, false);
   // const token = signToken(user._id);
-  console.log('update password hanlder executes without any error');
   // res.status(200).json({
   //   status: 'success',
   //   token
